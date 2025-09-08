@@ -14,7 +14,6 @@ import {
 
 import { getErrorMessage } from '../utils/errors.js';
 import { Config } from '../config/config.js';
-import { ProxyAgent, setGlobalDispatcher } from 'undici';
 
 interface TavilyResultItem {
   title: string;
@@ -172,12 +171,6 @@ export class WebSearchTool extends BaseDeclarativeTool<
         required: ['query'],
       },
     );
-    
-    // Check if sandbox proxy is set via GEMINI_SANDBOX_PROXY_COMMAND
-    if (process.env['GEMINI_SANDBOX_PROXY_COMMAND']) {
-      // When GEMINI_SANDBOX_PROXY_COMMAND is set, the proxy listens on localhost:8877
-      setGlobalDispatcher(new ProxyAgent('http://localhost:8877'));
-    }
   }
 
   /**
