@@ -41,4 +41,3 @@ web_search(query="latest advancements in AI-powered code generation")
 - **Response returned:** The `web_search` tool returns a concise answer when available, with a list of source links.
 - **Citations:** Source links are appended as a numbered list.
 - **API key:** Configure `TAVILY_API_KEY` via settings.json, environment variables, .env files, or command line arguments. If not configured, the tool is not registered.
-- **Proxy support:** When `GEMINI_SANDBOX_PROXY_COMMAND` is set, the tool will automatically use the sandbox proxy which listens on `http://localhost:8877`.
