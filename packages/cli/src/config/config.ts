@@ -920,6 +920,8 @@ export async function loadCliConfig(
     excludeTools,
     toolDiscoveryCommand: settings.tools?.discoveryCommand,
     toolCallCommand: settings.tools?.callCommand,
+    postGenerationHook: settings.tools?.postGenerationHook,
+    postTurnHook: settings.tools?.postTurnHook,
     mcpServerCommand: settings.mcp?.serverCommand,
     mcpServers,
     userMemory: memoryContent,

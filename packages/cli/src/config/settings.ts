@@ -120,6 +120,8 @@ const MIGRATION_MAP: Record<string, string> = {
   theme: 'ui.theme',
   toolDiscoveryCommand: 'tools.discoveryCommand',
   toolCallCommand: 'tools.callCommand',
+  postGenerationHook: 'tools.postGenerationHook',
+  postTurnHook: 'tools.postTurnHook',
   usageStatisticsEnabled: 'privacy.usageStatisticsEnabled',
   useExternalAuth: 'security.auth.useExternal',
   useRipgrep: 'tools.useRipgrep',

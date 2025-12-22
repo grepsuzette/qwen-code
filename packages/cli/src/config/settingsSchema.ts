@@ -966,6 +966,26 @@ const SETTINGS_SCHEMA = {
         description: 'The number of lines to keep when truncating tool output.',
         showInDialog: true,
       },
+      postGenerationHook: {
+        type: 'string',
+        label: 'Post Generation Hook',
+        category: 'Tools',
+        requiresRestart: false,
+        default: undefined as string | undefined,
+        description:
+          'Command to execute when a turn finishes generating content. The generated content is sent to the command via stdin.',
+        showInDialog: false,
+      },
+      postTurnHook: {
+        type: 'string',
+        label: 'Post Turn Hook',
+        category: 'Tools',
+        requiresRestart: false,
+        default: undefined as string | undefined,
+        description:
+          'Command to execute when a complete turn is finished. The accumulated content is sent to the command via stdin.',
+        showInDialog: false,
+      },
     },
   },
 

@@ -351,6 +351,8 @@ export interface ConfigParameters {
   sdkMode?: boolean;
   sessionSubagents?: SubagentConfig[];
   channel?: string;
+  postGenerationHook?: string;
+  postTurnHook?: string;
 }
 
 function normalizeConfigOutputFormat(
@@ -408,6 +410,8 @@ export class Config {
   private readonly excludeTools: string[] | undefined;
   private readonly toolDiscoveryCommand: string | undefined;
   private readonly toolCallCommand: string | undefined;
+  private readonly postGenerationHook: string | undefined;
+  private readonly postTurnHook: string | undefined;
   private readonly mcpServerCommand: string | undefined;
   private mcpServers: Record<string, MCPServerConfig> | undefined;
   private sessionSubagents: SubagentConfig[];
@@ -515,6 +519,8 @@ export class Config {
     this.excludeTools = params.excludeTools;
     this.toolDiscoveryCommand = params.toolDiscoveryCommand;
     this.toolCallCommand = params.toolCallCommand;
+    this.postGenerationHook = params.postGenerationHook;
+    this.postTurnHook = params.postTurnHook;
     this.mcpServerCommand = params.mcpServerCommand;
     this.mcpServers = params.mcpServers;
     this.sessionSubagents = params.sessionSubagents ?? [];
@@ -883,6 +889,14 @@ export class Config {
 
   getToolCallCommand(): string | undefined {
     return this.toolCallCommand;
+  }
+
+  getPostGenerationHook(): string | undefined {
+    return this.postGenerationHook;
+  }
+
+  getPostTurnHook(): string | undefined {
+    return this.postTurnHook;
   }
 
   getMcpServerCommand(): string | undefined {

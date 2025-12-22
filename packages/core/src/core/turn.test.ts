@@ -60,7 +60,15 @@ describe('Turn', () => {
       getHistory: mockGetHistory,
       maybeIncludeSchemaDepthContext: mockMaybeIncludeSchemaDepthContext,
     };
-    turn = new Turn(mockChatInstance as unknown as GeminiChat, 'prompt-id-1');
+    const mockConfig = {
+      getPostGenerationHook: vi.fn().mockReturnValue(undefined),
+      getPostTurnHook: vi.fn().mockReturnValue(undefined),
+    } as unknown as import('../config/config.js').Config;
+    turn = new Turn(
+      mockChatInstance as unknown as GeminiChat,
+      'prompt-id-1',
+      mockConfig,
+    );
     mockGetHistory.mockReturnValue([]);
     mockSendMessageStream.mockResolvedValue((async function* () {})());
   });

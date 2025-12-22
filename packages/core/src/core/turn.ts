@@ -28,6 +28,8 @@ import {
 } from '../utils/errors.js';
 import type { GeminiChat } from './geminiChat.js';
 import { getThoughtText, type ThoughtSummary } from '../utils/thoughtUtils.js';
+import type { Config } from '../config/config.js';
+import { spawn } from 'child_process';
 
 // Define a structure for tools passed to the server
 export interface ServerTool {
@@ -218,10 +220,12 @@ export class Turn {
   private pendingCitations = new Set<string>();
   finishReason: FinishReason | undefined = undefined;
   private currentResponseId?: string;
+  private accumulatedContent: string = '';
 
   constructor(
     private readonly chat: GeminiChat,
     private readonly prompt_id: string,
+    private readonly config?: Config,
   ) {}
   // The run method yields simpler events suitable for server logic
   async *run(
@@ -277,6 +281,8 @@ export class Turn {
 
         const text = getResponseText(resp);
         if (text) {
+          // Accumulate the content for post-generation hook
+          this.accumulatedContent += text;
           yield { type: GeminiEventType.Content, value: text };
         }
 
@@ -307,6 +313,12 @@ export class Turn {
           }
 
           this.finishReason = finishReason;
+
+          // Execute post-generation hook if configured
+          if (this.config?.getPostGenerationHook()) {
+            this.executePostGenerationHook();
+          }
+
           yield {
             type: GeminiEventType.Finished,
             value: {
@@ -315,6 +327,11 @@ export class Turn {
             },
           };
         }
+      }
+
+      // Execute post-turn hook when the entire turn is complete
+      if (this.config?.getPostTurnHook()) {
+        this.executePostTurnHook();
       }
     } catch (e) {
       if (signal.aborted) {
@@ -374,6 +391,66 @@ export class Turn {
 
     // Yield a request for the tool call, not the pending/confirming status
     return { type: GeminiEventType.ToolCallRequest, value: toolCallRequest };
+  }
+
+  private executePostGenerationHook(): void {
+    const hookCommand = this.config?.getPostGenerationHook();
+    if (!hookCommand) {
+      return;
+    }
+
+    const [cmd, ...args] = hookCommand.split(' ');
+    const child = spawn(cmd, args, {
+      stdio: ['pipe', 'ignore', 'pipe'],
+      env: {
+        ...process.env,
+        QWEN_GENERATED_CONTENT: this.accumulatedContent,
+        QWEN_GENERATION_EVENT_TYPE: 'completed', // Indicates generation is completed
+      },
+    });
+
+    // Don't wait for the process to complete - fire and forget
+    child.on('close', (code) => {
+      if (code !== 0) {
+        console.error(
+          `[Turn] Post-generation hook failed: ${hookCommand}, exit code: ${code}`,
+        );
+      }
+    });
+
+    child.on('error', () => {
+      console.error(`[Turn] Post-generation hook error: ${hookCommand}`);
+    });
+  }
+
+  private executePostTurnHook(): void {
+    const hookCommand = this.config?.getPostTurnHook();
+    if (!hookCommand) {
+      return;
+    }
+
+    const [cmd, ...args] = hookCommand.split(' ');
+    const child = spawn(cmd, args, {
+      stdio: ['pipe', 'ignore', 'pipe'],
+      env: {
+        ...process.env,
+        QWEN_GENERATED_CONTENT: this.accumulatedContent,
+        QWEN_GENERATION_EVENT_TYPE: 'turn_finished', // Indicates entire turn is finished
+      },
+    });
+
+    // Don't wait for the process to complete - fire and forget
+    child.on('close', (code) => {
+      if (code !== 0) {
+        console.error(
+          `[Turn] Post-turn hook failed: ${hookCommand}, exit code: ${code}`,
+        );
+      }
+    });
+
+    child.on('error', () => {
+      console.error(`[Turn] Post-turn hook error: ${hookCommand}`);
+    });
   }
 
   getDebugResponses(): GenerateContentResponse[] {

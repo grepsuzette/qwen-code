@@ -428,12 +428,12 @@ export class GeminiClient {
       this.sessionTurnCount > this.config.getMaxSessionTurns()
     ) {
       yield { type: GeminiEventType.MaxSessionTurns };
-      return new Turn(this.getChat(), prompt_id);
+      return new Turn(this.getChat(), prompt_id, this.config);
     }
     // Ensure turns never exceeds MAX_TURNS to prevent infinite loops
     const boundedTurns = Math.min(turns, MAX_TURNS);
     if (!boundedTurns) {
-      return new Turn(this.getChat(), prompt_id);
+      return new Turn(this.getChat(), prompt_id, this.config);
     }
 
     const compressed = await this.tryCompressChat(prompt_id, false);
@@ -486,7 +486,7 @@ export class GeminiClient {
               'Please start a new session or increase the sessionTokenLimit in your settings.json.',
           },
         };
-        return new Turn(this.getChat(), prompt_id);
+        return new Turn(this.getChat(), prompt_id, this.config);
       }
     }
 
@@ -517,7 +517,7 @@ export class GeminiClient {
       this.forceFullIdeContext = false;
     }
 
-    const turn = new Turn(this.getChat(), prompt_id);
+    const turn = new Turn(this.getChat(), prompt_id, this.config);
 
     if (!this.config.getSkipLoopDetection()) {
       const loopDetected = await this.loopDetector.turnStarted(signal);
